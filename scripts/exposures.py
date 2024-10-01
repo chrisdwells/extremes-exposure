@@ -196,7 +196,7 @@ plt.tight_layout()
 plt.savefig(
     f"{FIGDIR}/Exposures_on_GMST.png"
 )
-plt.close()  
+# plt.close()  
         
 #%%
 
@@ -273,7 +273,7 @@ plt.tight_layout()
 plt.savefig(
     f"{FIGDIR}/Exposures_sum_on_GMST.png"
 )
-plt.close()  
+# plt.close()  
 
 #%%
 
@@ -346,8 +346,8 @@ plt.ylabel('Exposure (per person per year) cf pi \n (solid), absolute (dashed)')
 
  
 plt.tight_layout()
-# plt.savefig(
-#     f"{FIGDIR}/Exposure_as_f_T.png", dpi=300
-# )
-# plt.close()         
+plt.savefig(
+    f"{FIGDIR}/Exposure_as_f_T.png", dpi=300
+)
+plt.close()         
         
