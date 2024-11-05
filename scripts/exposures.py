@@ -4,10 +4,11 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from scipy.optimize import curve_fit
 import copy
-
+from matplotlib.lines import Line2D
+import matplotlib.patches as mpatches
 # run in base folder
 
-DATADIR = 'data'
+DATADIR = 'data/essential'
 FIGDIR = 'plots'
 
 years=np.arange(2020,2100,10)
@@ -78,10 +79,10 @@ for unit in units:
             axs.legend()
 
     plt.tight_layout()
-    plt.savefig(
-        f"{FIGDIR}/Exposure_{unit}.png"
-    )
-    plt.close()
+    # plt.savefig(
+    #     f"{FIGDIR}/Exposure_{unit}.png"
+    # )
+    # plt.close()
     
 #%%
 
@@ -155,10 +156,10 @@ plt.ylabel('GMST cf 1850-1900')
    
 
 plt.tight_layout()
-plt.savefig(
-    f"{FIGDIR}/GMSTs.png"
-)
-plt.close()  
+# plt.savefig(
+#     f"{FIGDIR}/GMSTs.png"
+# )
+# plt.close()  
    
 #%%
 
@@ -166,19 +167,33 @@ plt.close()
     
 fig, axs = plt.subplots(2, 4, figsize=(18, 10))
 
+
+handles = []
+for scen in scens:
+    
+    handles.append(mpatches.Patch(color=colors[scen], label=scen.upper())) 
+
+
+handles.append(Line2D([0], [0], label='Mean', marker='.', markersize=10, 
+     markeredgecolor='grey', markerfacecolor='grey', linestyle=''))
+
+handles.append(Line2D([0], [0], label='2.5, 97.5 percentile', marker='x', markersize=10, 
+     markeredgecolor='grey', markerfacecolor='grey', linestyle=''))
+
+
 for v_i, var in enumerate(varlist):
     axs = plt.subplot(2, 4, v_i+1)
     
     for scen in scens:
         
         axs.scatter(mmm_temp[scen], data_dict[var][scen]['mean']['Per_person'], 
-             color = colors[scen], label=scen.upper())
+             color = colors[scen])
     
         axs.scatter(mmm_temp[scen], data_dict[var][scen]['low']['Per_person'], 
-             color = colors[scen], s=5)
+             color = colors[scen], marker='x')
         
         axs.scatter(mmm_temp[scen], data_dict[var][scen]['high']['Per_person'], 
-             color = colors[scen], s=5)
+             color = colors[scen], marker='x')
     
         axs.set_title(f'{var}')
         
@@ -189,7 +204,7 @@ for v_i, var in enumerate(varlist):
         axs.set_xlabel('GMST')
     
     if v_i ==7:
-        axs.legend()
+        axs.legend(handles=handles)
 
 
 plt.tight_layout()
@@ -236,16 +251,16 @@ axs = plt.subplot(1, 2, 1)
 for scen in scens:
     
     axs.scatter(mmm_temp[scen], data_dict_sum[scen]['mean'], 
-         color = colors[scen], label=scen.upper())
+         color = colors[scen])
     
     axs.scatter(mmm_temp[scen], data_dict_sum[scen]['low'], 
-         color = colors[scen], s=5)
+         color = colors[scen], marker='x')
     
     axs.scatter(mmm_temp[scen], data_dict_sum[scen]['high'], 
-         color = colors[scen], s=5)
+         color = colors[scen], marker='x')
 
 axs.set_title('Sum')
-axs.legend()
+axs.legend(handles=handles)
 axs.set_xlabel('GMST')
 axs.set_ylabel('Per person exposure/yr')
 
@@ -255,16 +270,16 @@ axs = plt.subplot(1, 2, 2)
 for scen in scens:
     
     axs.scatter(mmm_temp[scen], data_dict_sum_no_wn[scen]['mean'], 
-         color = colors[scen], label=scen.upper())
+         color = colors[scen])
     
     axs.scatter(mmm_temp[scen], data_dict_sum_no_wn[scen]['low'], 
-         color = colors[scen], s=5)
+         color = colors[scen], marker='x')
     
     axs.scatter(mmm_temp[scen], data_dict_sum_no_wn[scen]['high'], 
-         color = colors[scen], s=5)
+         color = colors[scen], marker='x')
 
 axs.set_title('Sum w/o WN')
-axs.legend()
+axs.legend(handles=handles)
 axs.set_xlabel('GMST')
 axs.set_ylabel('Per person exposure/yr')
 
@@ -346,8 +361,8 @@ plt.ylabel('Exposure (per person per year) cf pi \n (solid), absolute (dashed)')
 
  
 plt.tight_layout()
-plt.savefig(
-    f"{FIGDIR}/Exposure_as_f_T.png", dpi=300
-)
+# plt.savefig(
+#     f"{FIGDIR}/Exposure_as_f_T.png", dpi=300
+# )
 plt.close()         
         
