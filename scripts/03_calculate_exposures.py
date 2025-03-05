@@ -167,7 +167,7 @@ plt.tight_layout()
 plt.savefig(
     f"{FIGDIR}/GMSTs.png"
 )
-# plt.close()  
+plt.close()  
    
 
 # plot global exposure per person against GMST, by metric
@@ -325,6 +325,7 @@ for exposure in exposures:
         data_dict_sum_no_wn_all_scens[exposure].append(
             data_dict_sum_no_wn[scen][exposure])
 
+
 params_dict = {}
 for exposure in exposures:
 
@@ -337,7 +338,7 @@ for exposure in exposures:
 
     params_no_int[0] = 0
     
-    params_dict[exposure] = params_no_int
+    params_dict[exposure] = params_no_int[1:]
     
 
     plt.plot(temps_plot, fit(temps_plot, *params_no_int),
@@ -376,3 +377,8 @@ plt.savefig(
 )
 plt.close()         
         
+
+with open('../data/outputs/params_dict.pickle', 'wb') as handle:
+    pickle.dump(params_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)
+
+
