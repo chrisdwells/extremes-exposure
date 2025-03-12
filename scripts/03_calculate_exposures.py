@@ -7,6 +7,7 @@ import copy
 from matplotlib.lines import Line2D
 import matplotlib.patches as mpatches
 import pickle
+import scipy.stats
 
 # express the exposure variables as functions of GMST, from combined ESGF
 # and NASA data.
@@ -327,6 +328,8 @@ for exposure in exposures:
 
 
 params_dict = {}
+params_in_dict = {}
+
 for exposure in exposures:
 
     params_in, _ = curve_fit(
@@ -338,13 +341,70 @@ for exposure in exposures:
 
     params_no_int[0] = 0
     
-    params_dict[exposure] = params_no_int[1:]
+    params_dict[exposure] = params_no_int
+    params_in_dict[exposure] = params_in
     
 
-    plt.plot(temps_plot, fit(temps_plot, *params_no_int),
+#%%
+
+def opt(x, q025_desired, q50_desired, q975_desired):
+    q025, q50, q975 = scipy.stats.skewnorm.ppf(
+        (0.025, 0.50, 0.975), x[0], loc=x[1], scale=x[2]
+    )
+    return (q025 - q025_desired, q50 - q50_desired, q975 - q975_desired)
+
+temps_stats = np.linspace(0.5, 4.5, 9) 
+
+dist_params = {}
+    
+for t in temps_stats:
+    
+    q025_in = fit(t, *params_dict['low'])
+    q50_in = fit(t, *params_dict['mean'])
+    q975_in = fit(t, *params_dict['high'])
+
+    params_in = scipy.optimize.root(opt, [1, 1, 1], 
+                args=(q025_in, q50_in, q975_in)).x
+        
+    dist_params[t] = params_in
+
+
+
+params_percentiles = {}
+
+percentiles = np.linspace(0.025, 0.975, 11)
+
+for perc_i, percentile in enumerate(percentiles):
+    vals = []
+    for t in temps_stats:
+        params_dist = dist_params[t]
+        
+        vals.append(scipy.stats.skewnorm.ppf(percentile, 
+                     params_dist[0], params_dist[1], params_dist[2]))
+        
+        
+    params_percentile, _ = curve_fit(
+        fit, temps_stats, vals)
+    
+    params_percentiles[percentile] = params_percentile
+
+
+
+for perc_i, percentile in enumerate(percentiles):
+
+    params_in = params_percentiles[percentile]             
+
+    plt.plot(temps_plot, fit(temps_plot, *params_in), 
+             color='grey',
+             )
+    
+for exposure in exposures:
+
+
+    plt.plot(temps_plot, fit(temps_plot, *params_dict[exposure]),
              label=f'{exposure}', color=exposure_colors[exposure])
 
-    plt.plot(temps_plot, fit(temps_plot, *params_in),
+    plt.plot(temps_plot, fit(temps_plot, *params_in_dict[exposure]),
              linestyle='dashed', color=exposure_colors[exposure])
     
 
@@ -353,6 +413,10 @@ for exposure in exposures:
         color=exposure_colors[exposure])
 
 
+
+
+    
+    
 plt.axhline(0, color='grey')
 plt.xlabel('GMST cf pi')#' (offset: {np.around(gmst_offset, decimals=3)}K)')
 plt.ylabel('Exposure (per person per year) cf pi \n (solid), absolute (dashed)')
@@ -370,7 +434,7 @@ handles.append(Line2D([0], [0], linestyle='--', label='Quadratic, 2.5-97.5', col
 
 plt.legend(handles=handles)
 
- 
+
 plt.tight_layout()
 plt.savefig(
     f"{FIGDIR}/Exposure_as_f_T.png", dpi=300
@@ -381,4 +445,24 @@ plt.close()
 with open('../data/outputs/params_dict.pickle', 'wb') as handle:
     pickle.dump(params_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
+
+#%%
+
+
+output_dict = {}
+output_dict['Percentiles'] = percentiles
+output_dict['Energy Balance Model.T effect on population exposure to record breaking indices[1]'
+            ] = np.full(percentiles.shape, np.nan)
+output_dict['Energy Balance Model.T2 effect on population exposure to record breaking indices[1]'
+            ] = np.full(percentiles.shape, np.nan)
+
+for perc_i, percentile in enumerate(percentiles):
+    output_dict['Energy Balance Model.T effect on population exposure to record breaking indices[1]'
+                ][perc_i] = params_percentiles[percentile][0]
+    
+    output_dict['Energy Balance Model.T2 effect on population exposure to record breaking indices[1]'
+                ][perc_i] = params_percentiles[percentile][1]
+    
+with open('../data/outputs/exposure_output_dict.pickle', 'wb') as handle:
+    pickle.dump(output_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)
 
