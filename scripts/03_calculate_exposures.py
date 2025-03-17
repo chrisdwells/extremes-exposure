@@ -458,10 +458,10 @@ output_dict['Energy Balance Model.T2 effect on population exposure to record bre
 
 for perc_i, percentile in enumerate(percentiles):
     output_dict['Energy Balance Model.T effect on population exposure to record breaking indices[1]'
-                ][perc_i] = params_percentiles[percentile][0]
+                ][perc_i] = params_percentiles[percentile][1]
     
     output_dict['Energy Balance Model.T2 effect on population exposure to record breaking indices[1]'
-                ][perc_i] = params_percentiles[percentile][1]
+                ][perc_i] = params_percentiles[percentile][2]
     
 with open('../data/outputs/exposure_output_dict.pickle', 'wb') as handle:
     pickle.dump(output_dict, handle, protocol=pickle.HIGHEST_PROTOCOL)
